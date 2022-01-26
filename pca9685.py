@@ -1,10 +1,10 @@
-#本类 参考了网络文章Jetson nano i2c教程（MPU6050 + PCA9685）
+# 本类 参考了网络文章Jetson nano i2c教程（MPU6050 + PCA9685）
 # https://blog.csdn.net/qq_18676517/article/details/104873374
-#!/usr/bin/python
+# !/usr/bin/python
 
 import time
 import math
-from ch341 import USBI2C
+from ch341T.ch341t_i2c import CH341TI2C
 
 
 # ============================================================================
@@ -12,7 +12,6 @@ from ch341 import USBI2C
 # ============================================================================
 
 class PCA9685:
-
     # Registers/etc.
     __SUBADR1 = 0x02
     __SUBADR2 = 0x03
@@ -37,7 +36,7 @@ class PCA9685:
         """
         # self.bus = smbus.SMBus(1)
         # self.usb_iic = CH341AIIC()
-        self.usb_iic = USBI2C()
+        self.usb_iic = CH341TI2C()
         self.address = address
         self.debug = debug
         self._pre_left = -1000
@@ -56,13 +55,13 @@ class PCA9685:
         :param value:
         :return:
         """
-        #self.bus.write_byte_data(self.address, reg, value)
-        # self.usb_iic.set_clk(CH341AIIC.IIC_CLK_100kHz)
-        result = self.usb_iic.write(reg, value)
-        print("result:", result)
-        # if self.debug:
-        #     print("I2C: Write 0x%02X to register 0x%02X,result=%" % (value, reg, result))
-        #     pass
+        # self.bus.write_byte_data(self.address, reg, value)
+
+        result = self.usb_iic.write(self.address, reg, value)
+
+        if self.debug:
+            print("I2C: Device write 0x%02X to reg 0x%02X return 0x%02X" % (value, reg, result))
+            pass
 
     def read(self, reg):
         """
@@ -71,8 +70,7 @@ class PCA9685:
         :return:
         """
         # result = self.bus.read_byte_data(self.address, reg)
-        result = self.usb_iic.read(reg)
-        # result = result[1][0]
+        result = self.usb_iic.read(self.address, reg)
         if self.debug:
             print("I2C: Device 0x%02X returned 0x%02X from reg 0x%02X" % (self.address, result & 0xFF, reg))
         return result
@@ -183,7 +181,7 @@ class PCA9685:
                 self.setMotoPluse(0, 0)
             else:
                 self.setMotoPluse(0, 4095)
-            self.setMotoPluse(1, int(abs(left)*4095/255))
+            self.setMotoPluse(1, int(abs(left) * 4095 / 255))
             self._pre_left = left
 
         if abs(right - self._pre_right) >= 2:
@@ -191,7 +189,7 @@ class PCA9685:
                 self.setMotoPluse(2, 0)
             else:
                 self.setMotoPluse(2, 4095)
-            self.setMotoPluse(3, int(abs(right)*4095/255))
+            self.setMotoPluse(3, int(abs(right) * 4095 / 255))
             self._pre_right = right
 
     def drive_one_motor(self, channel, speed):
@@ -206,7 +204,7 @@ class PCA9685:
         if speed > 255:
             speed = 255
         self.setMotoPluse(channel, int(abs(speed) * 4095 / 255))
-    
+
     def close(self):
         pass
 
@@ -234,7 +232,7 @@ class PCA9685:
             else:
                 pin_left = 1
                 pin_left_0 = 0
-            self.setMotoPluse(pin_left, int(abs(left)*4095/255))
+            self.setMotoPluse(pin_left, int(abs(left) * 4095 / 255))
             self.setMotoPluse(pin_left_0, 0)
             self._pre_left = left
 
@@ -245,20 +243,26 @@ class PCA9685:
             else:
                 pin_right = 3
                 pin_right_0 = 2
-            self.setMotoPluse(pin_right, int(abs(right)*4095/255))
+            self.setMotoPluse(pin_right, int(abs(right) * 4095 / 255))
             self.setMotoPluse(pin_right_0, 0)
             self._pre_right = right
 
 
 if __name__ == '__main__':
 
-    pwm = PCA9685(0x41, debug=True)
+    pwm = PCA9685(0x40, debug=True)
     pwm.setPWMFreq(50)
     print("start the control")
+    r = 0
+    g = 0
+    b = 1
     while True:
-        pwm.set_servo_angle(0, 180)
-        pwm.digital_write(1, 1)
-        pwm.digital_write(2, 1)
+        r = not r
+        g = not g
+        b = not b
+        pwm.digital_write(0, r)
+        pwm.digital_write(1, g)
+        pwm.digital_write(2, b)
         time.sleep(1)
         #
         # for i in range(2500, 500, -10):
