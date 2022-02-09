@@ -156,7 +156,7 @@ class PCA9685:
 
     def digital_write(self, channel, value):
         """
-        指定引脚输出高低电平
+        指定引脚输出高低电平,模仿Arduino的digitalWrite
         由于jetson nano 的GPIO实在太弱，借用pca9685来输出高电平。
         :param channel:引脚
         :param value:输入为0，低电平，其它值为高电平。
@@ -165,6 +165,20 @@ class PCA9685:
             self.setPWM(channel=channel, on=0, off=0)
         else:
             self.setPWM(channel=channel, on=0, off=4095)
+
+    def analog_write(self, channel, value):
+        """
+        指定引脚输出PWM(范围是0~255)，模仿Arduino的analogWrite
+        :param channel: 引脚(范围是0~15)
+        :param value: pwm值（范围是0~255）
+        """
+        if self.debug:
+            print("设置 {} 通道，输出PWM值 {} 。".format(channel, value))
+        if value < 0:
+            value = 0
+        if value > 255:
+            value = 255
+        self.setMotoPluse(channel, int(abs(value) * 4095 / 255))
 
     def drive_motor(self, left, right):
         """
@@ -199,11 +213,7 @@ class PCA9685:
         :param speed: 速度（0~255）
         :return:
         """
-        if speed < 0:
-            speed = 0
-        if speed > 255:
-            speed = 255
-        self.setMotoPluse(channel, int(abs(speed) * 4095 / 255))
+        self.analog_write(channel, speed)
 
     def close(self):
         pass
@@ -211,40 +221,34 @@ class PCA9685:
     def drive_servo(self, angle):
         pass
 
-    def drive_motor_2(self, left, right):
+    def drive_motor_2(self, left, right, pin_left_1=0, pin_left_2=1, pin_right_1=2, pin_right_2=3):
         """
-            输入马达速度，驱动马达前进,此函数用于驱动需要四路PWM驱动的板，如L298N
-            PCA9685的0，2脚对应左，右马达的方向，1,3对应左右的PWM
+        输入马达速度，驱动马达前进,此函数用于驱动需要四路PWM驱动的板，如L298N
+            PCA9685的四个指定针脚连接驱动板对应的左右马达针脚
         :param left: 左马达速度（-255,255）
         :param right: 右马达速度（-255,255）
+        :param pin_left_1: 连接左马达驱动针脚1
+        :param pin_left_2: 连接左马达驱动针脚2
+        :param pin_right_1: 连接右马达驱动针脚1
+        :param pin_right_2: 连接右马达驱动针脚2
+        :return:
         """
-        pin_left = 0
-        pin_left_0 = 1
-        pin_right = 2
-        pin_right_0 = 3
+
         if self.debug:
             print("设置左马达速度：{}，设置右马达速度：{}".format(left, right))
 
         if abs(left - self._pre_left) >= 2:
-            if left >= 0:
-                pin_left = 0
-                pin_left_0 = 1
-            else:
-                pin_left = 1
-                pin_left_0 = 0
-            self.setMotoPluse(pin_left, int(abs(left) * 4095 / 255))
-            self.setMotoPluse(pin_left_0, 0)
+            if left <= 0:
+                pin_left_1, pin_left_2 = pin_left_2, pin_left_1
+            self.setMotoPluse(pin_left_1, int(abs(left) * 4095 / 255))
+            self.setMotoPluse(pin_left_2, 0)
             self._pre_left = left
 
         if abs(right - self._pre_right) >= 2:
-            if right >= 0:
-                pin_right = 2
-                pin_right_0 = 3
-            else:
-                pin_right = 3
-                pin_right_0 = 2
-            self.setMotoPluse(pin_right, int(abs(right) * 4095 / 255))
-            self.setMotoPluse(pin_right_0, 0)
+            if right <= 0:
+                pin_right_1, pin_right_2 = pin_right_2, pin_right_1
+            self.setMotoPluse(pin_right_1, int(abs(right) * 4095 / 255))
+            self.setMotoPluse(pin_right_2, 0)
             self._pre_right = right
 
 
