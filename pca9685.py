@@ -27,7 +27,7 @@ class PCA9685:
     __ALLLED_OFF_L = 0xFC
     __ALLLED_OFF_H = 0xFD
 
-    def __init__(self, address=0x40, frequency=50, debug=False):
+    def __init__(self, address=0x40, frequency=50, debug=False, dev_index=0):
         """
         初始化对象
         :param address: i2c地址
@@ -36,7 +36,7 @@ class PCA9685:
         """
         # self.bus = smbus.SMBus(1)
         # self.usb_iic = CH341AIIC()
-        self.usb_iic = CH341TI2C()
+        self.usb_iic = CH341TI2C(dev_index=dev_index)
         self.address = address
         self.debug = debug
         self._pre_left = -1000
