@@ -2,12 +2,14 @@
 ### PCA9685是一个廉价又好用的东西，既可以控制舵机，又可以控制电机，还可以控制LED等等。   
 ### 通过pca9685类提供了舵机，电机，pwm输出等函数，方便通过电脑的USB口，使用ch341A或者ch41T连接pca9685来控制电机和舵机等设备。
 ### 驱动的安装：
-*到官网下载驱动[驱动](http://www.wch.cn/downloads/CH341PAR_EXE.html)  
-*双击ch341par.exe安装驱动
+* 到官网下载ch341T的驱动程序[驱动程序](http://www.wch.cn/downloads/CH341PAR_EXE.html)  
+* 双击ch341par.exe安装驱动
+* ch341T跳线到IIC模式   
+
 ### 主要函数     
 * setPWMFreq  设置PWM的频率，舵机为默认50，电机一般可以设置为1000
 * digital_write  指定引脚输出高低电平,模仿Arduino的digitalWrite  
-* analog_write  指定引脚输出高低电平,模仿Arduino的digitalWrite
+* analog_write  指定引脚输出PWM,模仿Arduino的analog_Write
 * drive_motor   输入马达速度，驱动马达前进，此函数用于驱动那种需要两路PWM,两路数字信号的板，例如L298P
 * drive_motor_2 输入马达速度，驱动马达前进,此函数用于驱动需要四路PWM驱动的板，如L298N
 * drive_one_motor 控制一个马达（输出一个针脚的PWM，同analog_write)
