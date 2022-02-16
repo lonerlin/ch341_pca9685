@@ -1,4 +1,4 @@
-# ch341 iic 控制  pca9685   
+# ch341 iic 控制  pca9685，pcf8591  
 ### PCA9685是一个廉价又好用的东西，既可以控制舵机，又可以控制电机，还可以控制LED等等。   
 ### 通过pca9685类提供了舵机，电机，pwm输出等函数，方便通过电脑的USB口，使用ch341A或者ch41T连接pca9685来控制电机和舵机等设备。
 ### 驱动的安装：
@@ -38,6 +38,16 @@ while True:
     time.sleep(1)
 ```
 
+### pcf8591具有4路8位的模拟输入，1路模拟输出，配合pca9685使用，可以弥补pca9685只能输出，不能输入的缺陷   
+```python
+from pcf8591 import PCF8591
+import time
+
+pcf8591 = PCF8591(0x48)   # 对象初始化，指定IIC地址
+while True:
+    print("voltage value:{}".format(pcf8591.read(0)))  # 读取AIN0的值（0-255）
+    time.sleep(0.1)
+```
 
 
 
