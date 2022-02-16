@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 from ch341T.ch341t_i2c import CH341TI2C
 import time
 
@@ -8,7 +11,12 @@ class PCF8591:
         self.usb_iic = CH341TI2C(dev_index=dev_index)
         self.address = address
 
-    def read(self, chn):  # channel
+    def read(self, chn):
+        """
+        读取PCF8591的模拟输入（0-255）
+        :param chn: 通道（0-3）
+        :return: 输入电压转换为8位值
+        """
         try:
             self.usb_iic.write(self.address, 0x48, 0x40 | chn)
             # self.usb_iic.write(self.address, 0x40 | chn)  # 01000000
@@ -19,6 +27,11 @@ class PCF8591:
         return self.usb_iic.read(self.address, 0x40 | chn)
 
     def write(self, val):
+        """
+        输出电压值AOUT
+        :param val: 8位值（0~255）
+        :return: NULL
+        """
         try:
             self.usb_iic.write(self.address, 0x40, int(val))
         except Exception as e:
